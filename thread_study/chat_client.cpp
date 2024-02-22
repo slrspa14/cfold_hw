@@ -25,44 +25,44 @@ int main(int argc, char *argv[])
         printf("Usage : %s <IP> <port> <name> \n", argv[0]);
         exit(1);
     }
-    if(WSAStartup(MAKEWORD(2,2), &wsaData) !=0) //ìœˆì† ì†Œì¼“ëª…ì‹œ ë° ë¼ì´ë¸ŒëŸ¬ë¦¬ ì´ˆê¸°í™”
+    if(WSAStartup(MAKEWORD(2,2), &wsaData) !=0) //À©¼Ó ¼ÒÄÏ¸í½Ã ¹× ¶óÀÌºê·¯¸® ÃÊ±âÈ­
         ErrorHandling("WSAStartup() error!");
     sprintf(name, "[%s]", argv[3]);
-    hSock = socket(PF_INET, SOCK_STREAM, 0); //ì†Œì¼“ìƒì„±
-    //ì´ˆê¸°í™”
-    //ì„œë²„ì£¼ì†Œ êµ¬ì¡°ì²´ ì„¤ì •
+    hSock = socket(PF_INET, SOCK_STREAM, 0); //¼ÒÄÏ»ı¼º
+    //ÃÊ±âÈ­
+    //¼­¹öÁÖ¼Ò ±¸Á¶Ã¼ ¼³Á¤
     memset(&servAdr, 0, sizeof(servAdr));
     servAdr.sin_family = AF_INET;
     servAdr.sin_addr.s_addr = inet_addr(argv[1]);
     servAdr.sin_port = htons(atoi(argv[2]));
 
-    if(connect(hSock, (SOCKADDR*)&servAdr, sizeof(servAdr)) == SOCKET_ERROR) //ì—°ê²°
+    if(connect(hSock, (SOCKADDR*)&servAdr, sizeof(servAdr)) == SOCKET_ERROR) //¿¬°á
         ErrorHandling("connect() error!");
     hSndThread = 
-        (HANDLE)_beginthreadex(NULL, 0, SendMsg, (void*)&hSock, 0, NULL);//sendìš© thread
+        (HANDLE)_beginthreadex(NULL, 0, SendMsg, (void*)&hSock, 0, NULL);//send¿ë thread
     hRcvThread =
-        (HANDLE)_beginthreadex(NULL, 0, RecvMsg, (void*)&hSock, 0, NULL);//recvìš© thread
-    WaitForSingleObject(hSndThread, INFINITE);//ë‹¨ì¼ê°œì²´ ëŒ€ê¸° hSndThreadê°€ ëë‚ ë•Œê¹Œì§€ ëŒ€ê¸°ì¤‘
-    WaitForSingleObject(hRcvThread, INFINITE);//ë‹¨ì¼ê°œì²´ ëŒ€ê¸° hRcvThreadê°€ ëë‚ ë•Œê¹Œì§€ ëŒ€ê¸°ì¤‘
-    //ì—¬ëŸ¬ê°œì²´ ëŒ€ê¸° ì‹œí‚¤ë ¤ë©´ WaitForMultipleObjects
+        (HANDLE)_beginthreadex(NULL, 0, RecvMsg, (void*)&hSock, 0, NULL);//recv¿ë thread
+    WaitForSingleObject(hSndThread, INFINITE);//´ÜÀÏ°³Ã¼ ´ë±â hSndThread°¡ ³¡³¯¶§±îÁö ´ë±âÁß
+    WaitForSingleObject(hRcvThread, INFINITE);//´ÜÀÏ°³Ã¼ ´ë±â hRcvThread°¡ ³¡³¯¶§±îÁö ´ë±âÁß
+    //¿©·¯°³Ã¼ ´ë±â ½ÃÅ°·Á¸é WaitForMultipleObjects
     closesocket(hSock);
-    WSACleanup();//ìœˆì† í•´ì œ
+    WSACleanup();//À©¼Ó ÇØÁ¦
     return 0;
 }
 unsigned WINAPI SendMsg(void * arg) //send thread main
 {
-    SOCKET hSock = *((SOCKET*)arg); //ì†Œì¼“ í˜•ë³€í™˜
+    SOCKET hSock = *((SOCKET*)arg); //¼ÒÄÏ Çüº¯È¯
     char nameMsg[NAME_SIZE + BUF_SIZE];
     while(1)
     {
         fgets(msg, BUF_SIZE, stdin);
-        if(!strcmp(msg, "q\n") || !strcmp(msg, "Q\n"))//q, Q ëˆ„ë¥´ë©´ ë‚˜ê°€ê²Œ
+        if(!strcmp(msg, "q\n") || !strcmp(msg, "Q\n") || !strcmp(msg, "¤²2\n") || !strcmp(msg, "¤²¤²\n"))//q, Q ´©¸£¸é ³ª°¡°Ô
         {
-            closesocket(hSock);//ì†Œì¼“ì—°ê²°ì¢…ë£Œ
+            closesocket(hSock);//¼ÒÄÏ¿¬°áÁ¾·á
             exit(0);
         }
-        sprintf(nameMsg, "%s %s", name, msg); //ë°°ì—´ì— ì‘ì„±ëœ ë°”ì´íŠ¸ ìˆ˜ ë¦¬í„´ ë ë„ë¬¸ì ê³„ì‚°ì•ˆí•¨
-        send(hSock, nameMsg, strlen(nameMsg), 0);//ì†Œì¼“ í•¸ë“¤ê°’, ë³´ë‚¼ ë°ì´í„° ë²„í¼ì˜ ì£¼ì†Œê°’, ë³´ë‚¼ ë°”ì´íŠ¸ ìˆ˜, ì „ë‹¬ì˜µì…˜ ê±°ì˜0
+        sprintf(nameMsg, "%s %s", name, msg); //¹è¿­¿¡ ÀÛ¼ºµÈ ¹ÙÀÌÆ® ¼ö ¸®ÅÏ ³¡ ³Î¹®ÀÚ °è»ê¾ÈÇÔ
+        send(hSock, nameMsg, strlen(nameMsg), 0);//¼ÒÄÏ ÇÚµé°ª, º¸³¾ µ¥ÀÌÅÍ ¹öÆÛÀÇ ÁÖ¼Ò°ª, º¸³¾ ¹ÙÀÌÆ® ¼ö, Àü´Ş¿É¼Ç °ÅÀÇ0
     }
     return 0;
 }
@@ -73,8 +73,8 @@ unsigned WINAPI RecvMsg(void * arg) //read thread main
     int strLen;
     while(1)
     {
-        strLen = recv(hSock, nameMsg, NAME_SIZE + BUF_SIZE-1, 0);//ì†Œì¼“í•¸ë“¤ê°’, ë°›ëŠ” ë°ì´í„° ë²„í¼ì˜ ì£¼ì†Œê°’, ë°›ì„ ë°”ì´íŠ¸ ìˆ˜, ë°›ì„ë•Œ ì˜µì…˜, ë„ë¹¼ê³  ë°›ìœ¼ë ¤ê³  ì‚¬ì´ì¦ˆ -1
-        //ìˆ˜ì‹ ëœ ë°ì´í„°ì˜ í¬ê¸° ë°˜í™˜
+        strLen = recv(hSock, nameMsg, NAME_SIZE + BUF_SIZE-1, 0);//¼ÒÄÏÇÚµé°ª, ¹Ş´Â µ¥ÀÌÅÍ ¹öÆÛÀÇ ÁÖ¼Ò°ª, ¹ŞÀ» ¹ÙÀÌÆ® ¼ö, ¹ŞÀ»¶§ ¿É¼Ç, ³Î»©°í ¹ŞÀ¸·Á°í »çÀÌÁî -1
+        //¼ö½ÅµÈ µ¥ÀÌÅÍÀÇ Å©±â ¹İÈ¯
         if(strLen == -1)
             return -1;
         nameMsg[strLen] = 0;

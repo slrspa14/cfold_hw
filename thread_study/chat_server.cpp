@@ -3,6 +3,7 @@
 #include <string.h>
 #include <windows.h>
 #include <process.h>
+#include <ctime>
 
 #define BUF_SIZE 100
 #define MAX_CLNT 256
@@ -22,7 +23,7 @@ int main(int argc, char *argv[])
     SOCKADDR_IN servAdr, clntAdr;
     int clntAdrSz;
     HANDLE hThread;
-    if (argc !=2) //디스크립터 값 2아니라면
+    if (argc !=2)
     {
         printf("Usage:%s <port>\n", argv[0]);
         exit(1);
@@ -43,16 +44,18 @@ int main(int argc, char *argv[])
     //연결요청
     if(listen(hServSock, 5)==SOCKET_ERROR)//5개까지 대기
         ErrorHandling("listen() error");
+    std::time_t t=std::time(0); //현재시간뽑기(64비트정수형)
+    std::tm* now = std::localtime(&t);//정수형 포맷팅
     while(1)
     {
         clntAdrSz = sizeof(clntAdr);//클라사이즈구하고
         hClntSock = accept(hServSock, (SOCKADDR*)&clntAdr, &clntAdrSz);//연결수락(소켓,클라주소,클라사이즈)
         
-        WaitForSingleObject(hMutex, INFINITE); //임계영역 시작?
+        WaitForSingleObject(hMutex, INFINITE); //임계영역 시작
         clntSocks[clntCnt++] = hClntSock;//클라 입장마다 늘어나는 cnt로 배열에 클라소켓 집어넣고
-        ReleaseMutex(hMutex); //끝?
+        ReleaseMutex(hMutex); //끝
         hThread = (HANDLE)_beginthreadex(NULL, 0, HandleClnt, (void*)&hClntSock, 0, NULL);//쓰레드 생성
-        printf("Connected client IP:%s \n", inet_ntoa(clntAdr.sin_addr));
+        printf("Connected client IP:%s, time:%d:%d\n", inet_ntoa(clntAdr.sin_addr), (now->tm_hour),(now->tm_min));
     }
     closesocket(hServSock);
     WSACleanup();
@@ -68,7 +71,7 @@ unsigned WINAPI HandleClnt(void *arg)
         SendMsg(msg, strLen);
 
     WaitForSingleObject(hMutex, INFINITE);//단일개체대기시키는 함수,임계영역시작
-    for (i = 0; i < clntCnt; i++) //연결종료용
+    for (i = 0; i < clntCnt; i++)
     {
         if(hClntSock == clntSocks[i])
         {

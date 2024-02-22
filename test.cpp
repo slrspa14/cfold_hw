@@ -45,23 +45,23 @@
 //     int sd;
 //     return 0;
 // }
-// #include <iostream>
+#include <iostream>
 
-// int main()
-// {
-//     int num1 = 0;
-//     int num2 = 0;
-//     int num3 = 0;
-//     std::cout << "숫자입력:";
-//     std::cin >> num1;
-//     std::cout << "숫자입력:";
-//     std::cin >> num2;
-//     std::cout << "숫자입력:";
-//     std::cin >> num3;
-//     int result = num1 + num2;
-//     std::cout << result;
-//     return 0;
-// }
+int main()
+{
+    int num1 = 0;
+    int num2 = 0;
+    int num3 = 0;
+    std::cout << "숫자입력:";
+    std::cin >> num1;
+    std::cout << "숫자입력:";
+    std::cin >> num2;
+    std::cout << "숫자입력:";
+    std::cin >> num3;
+    int result = num1 + num2 + num3;
+    std::cout << result;
+    return 0;
+}
 
 // #define _WINSOCK_DEPRECATED_NO_WARNINGS
 // #define _CRT_SECURE_NO_WARNINGS
