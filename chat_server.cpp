@@ -4,7 +4,6 @@
 #include <windows.h>
 #include <process.h>
 
-
 #define BUF_SIZE 100
 #define MAX_CLNT 256
 
@@ -23,15 +22,15 @@ int main(int argc, char *argv[])
     SOCKADDR_IN servAdr, clntAdr;
     int clntAdrSz;
     HANDLE hThread;
-    if (argc !=2) //디스크립터 값 2아니라면 
+    if (argc !=2) //디스크립터 값 2아니라면
     {
         printf("Usage:%s <port>\n", argv[0]);
         exit(1);
     }
-    if(WSAStartup(MAKEWORD(2, 2), &wsaData)!=0)
+    if(WSAStartup(MAKEWORD(2, 2), &wsaData)!=0)//윈속 소켓 명시 및 라이브러리 초기화
         ErrorHandling("WSAStartup() error");
-    hMutex = CreateMutex(NULL, FALSE, NULL);
-    hServSock = socket(PF_INET, SOCK_STREAM, 0);
+    hMutex = CreateMutex(NULL, FALSE, NULL);//쓰레드 임계영역 관리용 Mutex
+    hServSock = socket(PF_INET, SOCK_STREAM, 0);//서버소켓생성
     //초기화
     memset(&servAdr, 0, sizeof(servAdr));
     servAdr.sin_family = AF_INET;
@@ -42,17 +41,17 @@ int main(int argc, char *argv[])
     if(bind(hServSock, (SOCKADDR*)&servAdr, sizeof(servAdr)) == SOCKET_ERROR)
         ErrorHandling("bind() error");
     //연결요청
-    if(listen(hServSock, 5)==SOCKET_ERROR)
+    if(listen(hServSock, 5)==SOCKET_ERROR)//5개까지 대기
         ErrorHandling("listen() error");
     while(1)
     {
-        clntAdrSz = sizeof(clntAdr);
-        hClntSock = accept(hServSock, (SOCKADDR*)&clntAdr, &clntAdrSz);//연결수락
+        clntAdrSz = sizeof(clntAdr);//클라사이즈구하고
+        hClntSock = accept(hServSock, (SOCKADDR*)&clntAdr, &clntAdrSz);//연결수락(소켓,클라주소,클라사이즈)
         
         WaitForSingleObject(hMutex, INFINITE); //임계영역 시작?
-        clntSocks[clntCnt++] = hClntSock;
+        clntSocks[clntCnt++] = hClntSock;//클라 입장마다 늘어나는 cnt로 배열에 클라소켓 집어넣고
         ReleaseMutex(hMutex); //끝?
-        hThread = (HANDLE)_beginthreadex(NULL, 0, HandleClnt, (void*)&hClntSock, 0, NULL);
+        hThread = (HANDLE)_beginthreadex(NULL, 0, HandleClnt, (void*)&hClntSock, 0, NULL);//쓰레드 생성
         printf("Connected client IP:%s \n", inet_ntoa(clntAdr.sin_addr));
     }
     closesocket(hServSock);
@@ -64,13 +63,12 @@ unsigned WINAPI HandleClnt(void *arg)
 {
     SOCKET hClntSock=*((SOCKET*)arg); //형변환
     int strLen = 0, i;
-    char msg[BUF_SIZE];
-    //if로 해서 채팅 안됐다
+    char msg[BUF_SIZE];    
     while((strLen = recv(hClntSock, msg, sizeof(msg), 0))!=0) //수신:소켓,메시지,메시지크기만큼,0거의
         SendMsg(msg, strLen);
-        
-    WaitForSingleObject(hMutex, INFINITE);
-    for ( i = 0; i < clntCnt; i++) //클라수만큼
+
+    WaitForSingleObject(hMutex, INFINITE);//단일개체대기시키는 함수,임계영역시작
+    for ( i = 0; i < clntCnt; i++) //연결종료용
     {
         if(hClntSock == clntSocks[i])
         {
@@ -80,7 +78,7 @@ unsigned WINAPI HandleClnt(void *arg)
         }
     }
     clntCnt--;
-    ReleaseMutex(hMutex);
+    ReleaseMutex(hMutex);//임계영역 끝내고
     closesocket(hClntSock);
     return 0;   
 }
