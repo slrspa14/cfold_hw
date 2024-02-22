@@ -63,12 +63,12 @@ unsigned WINAPI HandleClnt(void *arg)
 {
     SOCKET hClntSock=*((SOCKET*)arg); //형변환
     int strLen = 0, i;
-    char msg[BUF_SIZE];    
-    while((strLen = recv(hClntSock, msg, sizeof(msg), 0))!=0) //수신:소켓,메시지,메시지크기만큼,0거의
+    char msg[BUF_SIZE];
+    while((strLen = recv(hClntSock, msg, sizeof(msg), 0))!=0) //수신:소켓,메시지,메시지크기만큼,플래그
         SendMsg(msg, strLen);
 
     WaitForSingleObject(hMutex, INFINITE);//단일개체대기시키는 함수,임계영역시작
-    for ( i = 0; i < clntCnt; i++) //연결종료용
+    for (i = 0; i < clntCnt; i++) //연결종료용
     {
         if(hClntSock == clntSocks[i])
         {
@@ -80,7 +80,7 @@ unsigned WINAPI HandleClnt(void *arg)
     clntCnt--;
     ReleaseMutex(hMutex);//임계영역 끝내고
     closesocket(hClntSock);
-    return 0;   
+    return 0;
 }
 void SendMsg(char *msg, int len) //전체발송
 {
