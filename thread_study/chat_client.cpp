@@ -15,7 +15,7 @@ char name[NAME_SIZE] = "[DEFAULT]";
 char msg[BUF_SIZE];
 
 int main(int argc, char *argv[])
-{
+{    
     WSADATA wsaData;
     SOCKET hSock;
     SOCKADDR_IN servAdr;
