@@ -1,8 +1,10 @@
+#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <windows.h>
 #include <process.h>
+#include <thread>
 
 #define BUF_SIZE 100
 #define NAME_SIZE 20
@@ -20,61 +22,66 @@ int main(int argc, char *argv[])
     SOCKET hSock;
     SOCKADDR_IN servAdr;
     HANDLE hSndThread, hRcvThread;
-    if(argc !=4)
+    if(argc !=3)
     {
         printf("Usage : %s <IP> <port> <name> \n", argv[0]);
         exit(1);
     }
-    if(WSAStartup(MAKEWORD(2,2), &wsaData) !=0) //¿©º” º“ƒœ∏ÌΩ√ π◊ ∂Û¿Ã∫Í∑Ø∏Æ √ ±‚»≠
+    if(WSAStartup(MAKEWORD(2,2), &wsaData) !=0)
         ErrorHandling("WSAStartup() error!");
     sprintf(name, "[%s]", argv[3]);
-    hSock = socket(PF_INET, SOCK_STREAM, 0); //º“ƒœª˝º∫
-    //√ ±‚»≠
-    //º≠πˆ¡÷º“ ±∏¡∂√º º≥¡§
+    hSock = socket(PF_INET, SOCK_STREAM, 0);
     memset(&servAdr, 0, sizeof(servAdr));
     servAdr.sin_family = AF_INET;
     servAdr.sin_addr.s_addr = inet_addr(argv[1]);
     servAdr.sin_port = htons(atoi(argv[2]));
 
-    if(connect(hSock, (SOCKADDR*)&servAdr, sizeof(servAdr)) == SOCKET_ERROR) //ø¨∞·
+    if(connect(hSock, (SOCKADDR*)&servAdr, sizeof(servAdr)) == SOCKET_ERROR)
         ErrorHandling("connect() error!");
-    hSndThread = 
-        (HANDLE)_beginthreadex(NULL, 0, SendMsg, (void*)&hSock, 0, NULL);//sendøÎ thread
+    std::cout << "ÎãâÎÑ§ÏûÑ ÏÑ§Ï†ï" << std::endl;
+    std::cout << "====================" << std::endl;
+    std::cout << "1. 1:1Ï±ÑÌåÖ" << std::endl;
+    std::cout << "2. 1:Îã§Ïàò Ï±ÑÌåÖ" << std::endl;
+    std::cout << "3. ÏπúÍµ¨Ï∞æÍ∏∞" << std::endl;
+    std::cout << "4. Ï†ëÏÜçÏÉÅÌÉú ÌôïÏù∏" << std::endl;
+    std::cout << "====================" << std::endl;
+    hSndThread =
+        (HANDLE)_beginthreadex(NULL, 0, SendMsg, (void*)&hSock, 0, NULL);
     hRcvThread =
-        (HANDLE)_beginthreadex(NULL, 0, RecvMsg, (void*)&hSock, 0, NULL);//recvøÎ thread
-    WaitForSingleObject(hSndThread, INFINITE);//¥‹¿œ∞≥√º ¥Î±‚ hSndThread∞° ≥°≥Ø∂ß±Ó¡ˆ ¥Î±‚¡ﬂ
-    WaitForSingleObject(hRcvThread, INFINITE);//¥‹¿œ∞≥√º ¥Î±‚ hRcvThread∞° ≥°≥Ø∂ß±Ó¡ˆ ¥Î±‚¡ﬂ
-    //ø©∑Ø∞≥√º ¥Î±‚ Ω√≈∞∑¡∏È WaitForMultipleObjects
+        (HANDLE)_beginthreadex(NULL, 0, RecvMsg, (void*)&hSock, 0, NULL);
+    WaitForSingleObject(hSndThread, INFINITE);
+    WaitForSingleObject(hRcvThread, INFINITE);
+    
     closesocket(hSock);
-    WSACleanup();//¿©º” «ÿ¡¶
+    WSACleanup();
     return 0;
 }
-unsigned WINAPI SendMsg(void * arg) //send thread main
+
+unsigned WINAPI SendMsg(void * arg)
 {
-    SOCKET hSock = *((SOCKET*)arg); //º“ƒœ «¸∫Ø»Ø
+    SOCKET hSock = *((SOCKET*)arg);
     char nameMsg[NAME_SIZE + BUF_SIZE];
     while(1)
     {
         fgets(msg, BUF_SIZE, stdin);
-        if(!strcmp(msg, "q\n") || !strcmp(msg, "Q\n") || !strcmp(msg, "§≤2\n") || !strcmp(msg, "§≤§≤\n"))//q, Q ¥©∏£∏È ≥™∞°∞‘
+        if(!strcmp(msg, "q\n") || !strcmp(msg, "Q\n"))
         {
-            closesocket(hSock);//º“ƒœø¨∞·¡æ∑·
+            closesocket(hSock);
             exit(0);
         }
-        sprintf(nameMsg, "%s %s", name, msg); //πËø≠ø° ¿€º∫µ» πŸ¿Ã∆Æ ºˆ ∏Æ≈œ ≥° ≥ŒπÆ¿⁄ ∞ËªÍæ»«‘
-        send(hSock, nameMsg, strlen(nameMsg), 0);//º“ƒœ «⁄µÈ∞™, ∫∏≥æ µ•¿Ã≈Õ πˆ∆€¿« ¡÷º“∞™, ∫∏≥æ πŸ¿Ã∆Æ ºˆ, ¿¸¥ﬁø…º« ∞≈¿«0
+        sprintf(nameMsg, "%s %s", name, msg);
+        send(hSock, nameMsg, strlen(nameMsg), 0);
     }
     return 0;
 }
-unsigned WINAPI RecvMsg(void * arg) //read thread main
+unsigned WINAPI RecvMsg(void * arg)
 {
     int hSock = *((SOCKET*)arg);
     char nameMsg[NAME_SIZE + BUF_SIZE];
     int strLen;
     while(1)
     {
-        strLen = recv(hSock, nameMsg, NAME_SIZE + BUF_SIZE-1, 0);//º“ƒœ«⁄µÈ∞™, πﬁ¥¬ µ•¿Ã≈Õ πˆ∆€¿« ¡÷º“∞™, πﬁ¿ª πŸ¿Ã∆Æ ºˆ, πﬁ¿ª∂ß ø…º«, ≥Œª©∞Ì πﬁ¿∏∑¡∞Ì ªÁ¿Ã¡Ó -1
-        //ºˆΩ≈µ» µ•¿Ã≈Õ¿« ≈©±‚ π›»Ø
+        strLen = recv(hSock, nameMsg, NAME_SIZE + BUF_SIZE-1, 0);        
         if(strLen == -1)
             return -1;
         nameMsg[strLen] = 0;
