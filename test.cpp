@@ -36,9 +36,9 @@
 // {
 //     int num1 = 0;
 //     int num2 = 0;
-//     std::cout << "숫자입력:";
+//     std::cout << "?��?��?��?��:";
 //     std::cin >> num1;
-//     std::cout << "숫자입력:";
+//     std::cout << "?��?��?��?��:";
 //     std::cin >> num2;
 //     int result = num1 + num2;
 //     std::cout << result;
@@ -52,14 +52,15 @@ int main()
     int num1 = 0;
     int num2 = 0;
     int num3 = 0;
-    std::cout << "숫자입력:";
+    std::cout << "?��?��?��?��:";
     std::cin >> num1;
-    std::cout << "숫자입력:";
+    std::cout << "?��?��?��?��:";
     std::cin >> num2;
-    std::cout << "숫자입력:";
+    std::cout << "?��?��?��?��:";
     std::cin >> num3;
     int result = num1 + num2 + num3;
-    std::cout << result;
+    std::cout << "?��?" << std::endl;
+    std::cout << result;    
     return 0;
 }
 
@@ -100,7 +101,7 @@ int main()
 //     char message[MAXBYTE] = "";
 //     HANDLE mainthread;
 
-//     printf("\n사용법: mcodes_server [포트번호]\n");
+//     printf("\n?��?���?: mcodes_server [?��?��번호]\n");
 //     printf("\t\tex) mcoeds_server.exe 9195\n");
 //     printf("\t\tex)mcodes_server.exe\n\n");
 
@@ -113,7 +114,7 @@ int main()
 //         while(1)
 //         {
 //             gets_s(message, MAXBYTE);
-//             if(strcmp(message, "/x") == 0) //사이즈 0이면 멈추기
+//             if(strcmp(message, "/x") == 0) //?��?���? 0?���? 멈추�?
 //                 break;
 //                 notify_client(message);
 //         }
@@ -134,12 +135,12 @@ int main()
 //     total_socket_count = 0;
 //     if(WSAStartup(MAKEWORD(2, 2), &wsadata) !=0)
 //     {
-//         puts("WSAStartup 에러");
+//         puts("WSAStartup ?��?��");
 //         return -1;
 //     }
 //     if((s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0)
 //     {
-//         puts("socket 에러");
+//         puts("socket ?��?��");
 //         return -1;
 //     }
 //     memset(&server_address, 0, sizeof(server_address));
