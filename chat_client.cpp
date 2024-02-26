@@ -126,6 +126,7 @@ unsigned WINAPI RecvMsg(void * arg)
         strLen = recv(hSock, nameMsg, NAME_SIZE + BUF_SIZE-1, 0);
         if(strLen == -1)
             return -1;
+        
         if(std::string(nameMsg) == "1_갠톡")
         {
             //한 명 누구 고를건지
@@ -137,6 +138,7 @@ unsigned WINAPI RecvMsg(void * arg)
         else if(std::string(nameMsg) == "3_친구찾기")
         {
             //접속현황
+            std::cout << nameMsg << std::endl;
         }
         // nameMsg[strLen] = 0;
         // fputs(nameMsg, stdout);

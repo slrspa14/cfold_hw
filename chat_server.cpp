@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
         std::string user_name(nickname);
         std::cout << userid.size();
-        bool duplication;
+        bool duplication;//중복용
         if(std::find(userid.begin(), userid.end(), user_name) != userid.end()) //vector 탐색 중복용        
         {
             duplication = false;
@@ -110,13 +110,16 @@ unsigned WINAPI HandleClnt(void *arg)
     char msg[BUF_SIZE];
     while((strLen = recv(hClntSock, msg, sizeof(msg), 0))!=0)
     {
+        msg[strLen] = 0;
         if(std::string(msg) == "1")//1:1채팅
         {
             //친구닉네임 입력하게 하기
             //친구닉네임 수신후 맞는 소켓 찾아서 둘이 채팅하게 하기
+            std::cout << "1:1";
         }
         else if(std::string(msg) == "2")//1:다 채팅
         {
+            std::cout << "1:다";
             SendMsg(msg, strLen);
         }
         else //친구찾기
@@ -126,9 +129,11 @@ unsigned WINAPI HandleClnt(void *arg)
             //접속현황 띄워주고 친추할 인원 수신받기
             for(int i =0; i<userid.size() ; i++)
             {                
-                user_list = "접속인원: " + userid[i] + ", ";
-                std::cout << user_list;
+                user_list += userid[i];
+                if(i != userid.size() -1)
+                    user_list += ", ";                
             }
+            std::cout << user_list;
         }
         // SendMsg(msg, strLen);
     }
