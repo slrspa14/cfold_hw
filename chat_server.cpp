@@ -23,7 +23,7 @@ SOCKET clntSocks[MAX_CLNT];
 HANDLE hMutex;
 
 std::vector<std::string> userid;//닉네임 저장용
-std::map<SOCKET, char*> devide;//소켓저장용
+std::map<SOCKET, std::string> devide;//소켓저장용
 
 int main(int argc, char *argv[])
 {
@@ -86,15 +86,13 @@ int main(int argc, char *argv[])
             // std::cout << "ㅌㄱ";
             send(hClntSock, msg.c_str(), strlen(msg.c_str()), 0);
             userid.push_back(user_name);//닉네임 벡터 저장
+            // devide.insert(clntSocks[clntCnt-1], user_name);
+            devide [clntSocks[clntCnt-1]] = user_name;//map 소켓 닉네임 저장
         }
         // for (int i = 0; i < userid.size(); i++) //확인용
         // {
         //     std::cout << userid[i];
         // }
-
-        //map 소켓 닉네임 저장
-        devide [clntSocks[clntCnt-1]] = nickname;
-
         hThread = (HANDLE)_beginthreadex(NULL, 0, HandleClnt, (void*)&hClntSock, 0, NULL);
         std::cout << "Connected client IP:" << inet_ntoa(clntAdr.sin_addr) << ", TIME:" << (now->tm_hour) << ":" << now->tm_min << std::endl;
     }
