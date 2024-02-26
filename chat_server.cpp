@@ -22,6 +22,9 @@ int clntCnt = 0;
 SOCKET clntSocks[MAX_CLNT];
 HANDLE hMutex;
 
+std::vector<std::string> userid;//닉네임 저장용
+std::map<SOCKET, char*> devide;//소켓저장용
+
 int main(int argc, char *argv[])
 {
     WSADATA wsaData;
@@ -52,7 +55,6 @@ int main(int argc, char *argv[])
     //접속시간용
     std::time_t t=std::time(0);
     std::tm* now = std::localtime(&t);
-    std::vector<std::string> userid;
 
     while(1)
     {
@@ -91,7 +93,6 @@ int main(int argc, char *argv[])
         // }
 
         //map 소켓 닉네임 저장
-        std::map<SOCKET, char*> devide;
         devide [clntSocks[clntCnt-1]] = nickname;
 
         hThread = (HANDLE)_beginthreadex(NULL, 0, HandleClnt, (void*)&hClntSock, 0, NULL);
@@ -104,6 +105,8 @@ int main(int argc, char *argv[])
 
 unsigned WINAPI HandleClnt(void *arg)
 {
+    //들어와서 바로 소켓 구분해서 보내주기
+    //구분자 붙여서 보내주기
     SOCKET hClntSock=*((SOCKET*)arg);
     int strLen = 0, i;
     char msg[BUF_SIZE];
@@ -111,18 +114,25 @@ unsigned WINAPI HandleClnt(void *arg)
     {
         if(std::string(msg) == "1")//1:1채팅
         {
-
+            //친구닉네임 입력하게 하기
+            //친구닉네임 수신후 맞는 소켓 찾아서 둘이 채팅하게 하기
         }
         else if(std::string(msg) == "2")//1:다 채팅
         {
-
+            SendMsg(msg, strLen);
         }
         else //친구찾기
         {
+            std::cout << "친구찾기";
+            std::string user_list;
             //접속현황 띄워주고 친추할 인원 수신받기
-
+            for(int i =0; i<userid.size() ; i++)
+            {                
+                user_list = "접속인원: " + userid[i] + ", ";
+                std::cout << user_list;
+            }
         }
-        SendMsg(msg, strLen);
+        // SendMsg(msg, strLen);
     }
 
     WaitForSingleObject(hMutex, INFINITE);

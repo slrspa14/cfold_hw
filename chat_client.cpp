@@ -41,7 +41,6 @@ int main(int argc, char *argv[])
         ErrorHandling((char*)"connect() error!");
 
     std::cout << "닉네임을 입력해주세요." << std::endl;
-    // std::cin.getline(nickname, NAME_SIZE);
     std::cin >> nickname;
     std::cin.ignore();
     send(hSock, nickname, strlen(nickname), 0);//닉네임 전송
@@ -97,7 +96,7 @@ unsigned WINAPI SendMsg(void * arg)
     }
     std::string choice = std::to_string(select);//형변환
     send(hSock, choice.c_str(), strlen(choice.c_str()), 0);//전송
-    //수신, 여기에 멈춰있구나 이 개새끼
+    //수신, 여기에 멈춰있구나
     // recv(hSock, msg, strlen(msg), 0);
 
     char nameMsg[NAME_SIZE + BUF_SIZE];
@@ -116,6 +115,9 @@ unsigned WINAPI SendMsg(void * arg)
 }
 unsigned WINAPI RecvMsg(void * arg)
 {
+    //send함수에서 보내고 여기서 받고
+    //서버가 보내준거 처리하기
+    //서버에서 구분자 붙여서 보낸거 받기
     int hSock = *((SOCKET*)arg);
     char nameMsg[NAME_SIZE + BUF_SIZE];
     int strLen;
@@ -124,8 +126,20 @@ unsigned WINAPI RecvMsg(void * arg)
         strLen = recv(hSock, nameMsg, NAME_SIZE + BUF_SIZE-1, 0);
         if(strLen == -1)
             return -1;
-        nameMsg[strLen] = 0;
-        fputs(nameMsg, stdout);
+        if(std::string(nameMsg) == "1_갠톡")
+        {
+            //한 명 누구 고를건지
+        }
+        else if(std::string(nameMsg) == "2_단톡")
+        {
+            //초대하라고 말하겄지
+        }
+        else if(std::string(nameMsg) == "3_친구찾기")
+        {
+            //접속현황
+        }
+        // nameMsg[strLen] = 0;
+        // fputs(nameMsg, stdout);
     }
     return 0;
 }
