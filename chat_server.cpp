@@ -22,8 +22,8 @@ int clntCnt = 0;
 SOCKET clntSocks[MAX_CLNT];
 HANDLE hMutex;
 
-std::vector<std::string> userid;//ë‹‰ë„¤ì„ ì €ì¥ìš©
-std::map<SOCKET, std::string> devide;//ì†Œì¼“ì €ì¥ìš©
+std::vector<std::string> userid;//´Ğ³×ÀÓ ÀúÀå¿ë
+std::map<SOCKET, std::string> devide;//¼ÒÄÏÀúÀå¿ë
 
 int main(int argc, char *argv[])
 {
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     
     if(listen(hServSock, 5)==SOCKET_ERROR)
         ErrorHandling((char*)"listen() error");
-    //ì ‘ì†ì‹œê°„ìš©
+    //Á¢¼Ó½Ã°£¿ë
     std::time_t t=std::time(0);
     std::tm* now = std::localtime(&t);
 
@@ -66,30 +66,40 @@ int main(int argc, char *argv[])
         ReleaseMutex(hMutex);
         int msglen;
         char nickname[NAME_SIZE];
-        msglen = recv(hClntSock, nickname, sizeof(nickname)-1,0);//ë‹‰ë„¤ì„ ë°›ê³ 
-        nickname[msglen] = 0;//ë§ˆì§€ë§‰ì—ë„ë¬¸ììš©
+        // msglen = recv(hClntSock, nickname, sizeof(nickname)-1,0);//´Ğ³×ÀÓ ¹Ş°í
+        // nickname[msglen] = 0;//¸¶Áö¸·¿¡³Î¹®ÀÚ¿ë
 
-        std::string user_name(nickname);
-        std::cout << userid.size();
-        bool duplication;//ì¤‘ë³µìš©
-        if(std::find(userid.begin(), userid.end(), user_name) != userid.end()) //vector íƒìƒ‰ ì¤‘ë³µìš©        
+        // std::string user_name(nickname);
+        // std::cout << userid.size();
+        // bool duplication;//Áßº¹¿ë
+        while(1)
         {
-            duplication = false;
-            std::string msg = "re";
-            // std::cout << "test";
-            send(hClntSock, msg.c_str(), strlen(msg.c_str()), 0);
+            msglen = recv(hClntSock, nickname, sizeof(nickname)-1,0);//´Ğ³×ÀÓ ¹Ş°í
+            nickname[msglen] = 0;//¸¶Áö¸·¿¡³Î¹®ÀÚ¿ë
+
+            std::string user_name(nickname);
+            // std::cout << userid.size();
+            bool duplication;//Áßº¹¿ë
+            if(std::find(userid.begin(), userid.end(), user_name) != userid.end()) //vector Å½»ö Áßº¹¿ë        
+            {
+                duplication = false;
+                std::string msg = "re";
+                // std::cout << "test";
+                send(hClntSock, msg.c_str(), strlen(msg.c_str()), 0);
+            }
+            else
+            {
+                duplication = true;
+                std::string msg = "ok";
+                // std::cout << "¤¼¤¡";
+                send(hClntSock, msg.c_str(), strlen(msg.c_str()), 0);
+                userid.push_back(user_name);//´Ğ³×ÀÓ º¤ÅÍ ÀúÀå
+                // devide.insert(clntSocks[clntCnt-1], user_name);
+                devide [clntSocks[clntCnt-1]] = user_name;//map ¼ÒÄÏ ´Ğ³×ÀÓ ÀúÀå
+                break;
+            }
         }
-        else
-        {
-            duplication = true;
-            std::string msg = "ok";
-            // std::cout << "ã…Œã„±";
-            send(hClntSock, msg.c_str(), strlen(msg.c_str()), 0);
-            userid.push_back(user_name);//ë‹‰ë„¤ì„ ë²¡í„° ì €ì¥
-            // devide.insert(clntSocks[clntCnt-1], user_name);
-            devide [clntSocks[clntCnt-1]] = user_name;//map ì†Œì¼“ ë‹‰ë„¤ì„ ì €ì¥
-        }
-        // for (int i = 0; i < userid.size(); i++) //í™•ì¸ìš©
+        // for (int i = 0; i < userid.size(); i++) //È®ÀÎ¿ë
         // {
         //     std::cout << userid[i];
         // }
@@ -103,37 +113,40 @@ int main(int argc, char *argv[])
 
 unsigned WINAPI HandleClnt(void *arg)
 {
-    //ë“¤ì–´ì™€ì„œ ë°”ë¡œ ì†Œì¼“ êµ¬ë¶„í•´ì„œ ë³´ë‚´ì£¼ê¸°
-    //êµ¬ë¶„ì ë¶™ì—¬ì„œ ë³´ë‚´ì£¼ê¸°
+    //µé¾î¿Í¼­ ¹Ù·Î ¼ÒÄÏ ±¸ºĞÇØ¼­ º¸³»ÁÖ±â
+    //±¸ºĞÀÚ ºÙ¿©¼­ º¸³»ÁÖ±â
     SOCKET hClntSock=*((SOCKET*)arg);
     int strLen = 0, i;
     char msg[BUF_SIZE];
     while((strLen = recv(hClntSock, msg, sizeof(msg), 0))!=0)
     {
-        msg[strLen] = 0;
-        if(std::string(msg) == "1")//1:1ì±„íŒ…
+        // msg[strLen] = 0;
+        if(std::string(msg) == "1")//1:1Ã¤ÆÃ
         {
-            //ì¹œêµ¬ë‹‰ë„¤ì„ ì…ë ¥í•˜ê²Œ í•˜ê¸°
-            //ì¹œêµ¬ë‹‰ë„¤ì„ ìˆ˜ì‹ í›„ ë§ëŠ” ì†Œì¼“ ì°¾ì•„ì„œ ë‘˜ì´ ì±„íŒ…í•˜ê²Œ í•˜ê¸°
+            //Ä£±¸´Ğ³×ÀÓ ÀÔ·ÂÇÏ°Ô ÇÏ±â
+            //Ä£±¸´Ğ³×ÀÓ ¼ö½ÅÈÄ ¸Â´Â ¼ÒÄÏ Ã£¾Æ¼­ µÑÀÌ Ã¤ÆÃÇÏ°Ô ÇÏ±â
             std::cout << "1:1";
         }
-        else if(std::string(msg) == "2")//1:ë‹¤ ì±„íŒ…
+        else if(std::string(msg) == "2")//1:´Ù Ã¤ÆÃ
         {
-            std::cout << "1:ë‹¤";
-            SendMsg(msg, strLen);
+            std::cout << "1:´Ù";
+            while(1)
+                SendMsg(msg, strLen);
         }
-        else //ì¹œêµ¬ì°¾ê¸°
+        else if(std::string(msg) == "3") //Ä£±¸Ã£±â
         {
-            std::cout << "ì¹œêµ¬ì°¾ê¸°";
-            std::string user_list;
-            //ì ‘ì†í˜„í™© ë„ì›Œì£¼ê³  ì¹œì¶”í•  ì¸ì› ìˆ˜ì‹ ë°›ê¸°
+            std::cout << "Ä£±¸Ã£±â, ";
+            std::string user_list, test;
+            //Á¢¼ÓÇöÈ² ¶ç¿öÁÖ°í Ä£ÃßÇÒ ÀÎ¿ø ¼ö½Å¹Ş±â
             for(int i =0; i<userid.size() ; i++)
-            {                
+            {
                 user_list += userid[i];
                 if(i != userid.size() -1)
-                    user_list += ", ";                
+                    user_list += ", ";
+                test = "3_Ä£±¸Ã£±â_" + user_list;
             }
-            std::cout << user_list;
+            send(hClntSock, test.c_str(), strlen(test.c_str()), 0);
+            std::cout << test;            
         }
         // SendMsg(msg, strLen);
     }

@@ -4,7 +4,10 @@
 #include <string.h>
 #include <windows.h>
 #include <process.h>
-#include <thread>
+#include <sstream>
+#include <string>
+#include <sstream>
+#include <list>
 
 #define BUF_SIZE 100
 #define NAME_SIZE 20
@@ -40,18 +43,18 @@ int main(int argc, char *argv[])
     if(connect(hSock, (SOCKADDR*)&servAdr, sizeof(servAdr)) == SOCKET_ERROR)
         ErrorHandling((char*)"connect() error!");
 
-    std::cout << "ë‹‰ë„¤ì„ì„ ì…ë ¥í•´ì£¼ì„¸ìš”." << std::endl;
+    std::cout << "´Ğ³×ÀÓÀ» ÀÔ·ÂÇØÁÖ¼¼¿ä." << std::endl;
     std::cin >> nickname;
     std::cin.ignore();
-    send(hSock, nickname, strlen(nickname), 0);//ë‹‰ë„¤ì„ ì „ì†¡
-    //ì¤‘ë³µê²°ê³¼ ë°›ê¸°
+    send(hSock, nickname, strlen(nickname), 0);//´Ğ³×ÀÓ Àü¼Û
+    //Áßº¹°á°ú ¹Ş±â
     while(1)
     {
         recv(hSock, msg, BUF_SIZE, 0);
         if(std::string (msg) == "re")
         {
-            std::cout << "ì¤‘ë³µëœ ë‹‰ë„¤ì„ì´ ì ‘ì†ì¤‘ì…ë‹ˆë‹¤. ë‹¤ì‹œ ì…ë ¥í•´ì£¼ì„¸ìš”." << std::endl;
-            std::cout << "ë‹‰ë„¤ì„: ";            
+            std::cout << "Áßº¹µÈ ´Ğ³×ÀÓÀÌ Á¢¼ÓÁßÀÔ´Ï´Ù. ´Ù½Ã ÀÔ·ÂÇØÁÖ¼¼¿ä." << std::endl;
+            std::cout << "´Ğ³×ÀÓ: ";
             std::cin >> nickname;
             std::cin.ignore();
             send(hSock, nickname, strlen(nickname), 0);
@@ -77,27 +80,25 @@ unsigned WINAPI SendMsg(void * arg)
     
     int select;
     std::cout << "====================" << std::endl;
-    std::cout << "1. 1:1ì±„íŒ…" << std::endl;
-    std::cout << "2. 1:ë‹¤ìˆ˜ ì±„íŒ…" << std::endl;
-    std::cout << "3. ì¹œêµ¬ì¶”ê°€" << std::endl;
+    std::cout << "1. 1:1Ã¤ÆÃ" << std::endl;
+    std::cout << "2. 1:´Ù¼ö Ã¤ÆÃ" << std::endl;
+    std::cout << "3. Ä£±¸Ãß°¡" << std::endl;
     std::cout << "====================" << std::endl;
-    std::cout << "ë©”ë‰´ì„ íƒ:";
+    std::cout << "¸Ş´º¼±ÅÃ:";
     std::cin >> select;
     while(select > 4)
     {
-        std::cout << "ì˜ëª»ëœ ì…ë ¥ì…ë‹ˆë‹¤. ë‹¤ì‹œ ì…ë ¥í•´ì£¼ì„¸ìš”" << std::endl;
+        std::cout << "Àß¸øµÈ ÀÔ·ÂÀÔ´Ï´Ù. ´Ù½Ã ÀÔ·ÂÇØÁÖ¼¼¿ä" << std::endl;
         std::cout << "====================" << std::endl;
-        std::cout << "1. 1:1ì±„íŒ…" << std::endl;
-        std::cout << "2. 1:ë‹¤ìˆ˜ ì±„íŒ…" << std::endl;
-        std::cout << "3. ì¹œêµ¬ì¶”ê°€" << std::endl;
+        std::cout << "1. 1:1Ã¤ÆÃ" << std::endl;
+        std::cout << "2. 1:´Ù¼ö Ã¤ÆÃ" << std::endl;
+        std::cout << "3. Ä£±¸Ãß°¡" << std::endl;
         std::cout << "====================" << std::endl;
-        std::cout << "ë©”ë‰´ì„ íƒ:";
+        std::cout << "¸Ş´º¼±ÅÃ:";
         std::cin >> select;
     }
-    std::string choice = std::to_string(select);//í˜•ë³€í™˜
-    send(hSock, choice.c_str(), strlen(choice.c_str()), 0);//ì „ì†¡
-    //ìˆ˜ì‹ , ì—¬ê¸°ì— ë©ˆì¶°ìˆêµ¬ë‚˜
-    // recv(hSock, msg, strlen(msg), 0);
+    std::string choice = std::to_string(select);//Çüº¯È¯
+    send(hSock, choice.c_str(), strlen(choice.c_str()), 0);//Àü¼Û
 
     char nameMsg[NAME_SIZE + BUF_SIZE];
     while(1)
@@ -115,33 +116,49 @@ unsigned WINAPI SendMsg(void * arg)
 }
 unsigned WINAPI RecvMsg(void * arg)
 {
-    //sendí•¨ìˆ˜ì—ì„œ ë³´ë‚´ê³  ì—¬ê¸°ì„œ ë°›ê³ 
-    //ì„œë²„ê°€ ë³´ë‚´ì¤€ê±° ì²˜ë¦¬í•˜ê¸°
-    //ì„œë²„ì—ì„œ êµ¬ë¶„ì ë¶™ì—¬ì„œ ë³´ë‚¸ê±° ë°›ê¸°
+    //sendÇÔ¼ö¿¡¼­ º¸³»°í ¿©±â¼­ ¹Ş°í
+    //¼­¹ö°¡ º¸³»ÁØ°Å Ã³¸®ÇÏ±â
+    //¼­¹ö¿¡¼­ ±¸ºĞÀÚ ºÙ¿©¼­ º¸³½°Å ¹Ş±â
+    // std::cout << "¤·¤¡";//µé¾î¿À´Âµ¥
     int hSock = *((SOCKET*)arg);
+    // std::cout << hSock  << "¼ÒÄÏ" << std::endl;
     char nameMsg[NAME_SIZE + BUF_SIZE];
-    int strLen;
+    int strLen, i = 0;
     while(1)
     {
-        strLen = recv(hSock, nameMsg, NAME_SIZE + BUF_SIZE-1, 0);
+        std::cout << "È®ÀÎ¿ë";
+        // recv(hSock, nameMsg, NAME_SIZE + BUF_SIZE-1, 0);
+        //¿Ö 5¹ø¾¿ µ¹Áö
+        strLen = recv(hSock,nameMsg,sizeof(NAME_SIZE + BUF_SIZE-1),0);
+        nameMsg[strLen] = 0;
+        // std::cout << nameMsg << "namemsg" << std::endl;
+        std::string(nameMsg);
+        std::istringstream split(nameMsg);
+        char devide = '_';
+        std::string test;
+        std::list<std::string> recvmsg;
+        while(getline(split, test, devide))
+        {
+            std::cout << test << std::endl;
+        }
+
         if(strLen == -1)
             return -1;
         
-        if(std::string(nameMsg) == "1_ê° í†¡")
+        if(std::string(nameMsg) == "1_°µÅå")
         {
-            //í•œ ëª… ëˆ„êµ¬ ê³ ë¥¼ê±´ì§€
+            //ÇÑ ¸í ´©±¸ °í¸¦°ÇÁö
         }
-        else if(std::string(nameMsg) == "2_ë‹¨í†¡")
+        else if(std::string(nameMsg) == "2_´ÜÅå")
         {
-            //ì´ˆëŒ€í•˜ë¼ê³  ë§í•˜ê²„ì§€
+            //ÃÊ´ëÇÏ¶ó°í ¸»ÇÏ°ÎÁö
         }
-        else if(std::string(nameMsg) == "3_ì¹œêµ¬ì°¾ê¸°")
+        else if(std::string(nameMsg) == "3")
         {
-            //ì ‘ì†í˜„í™©
+            //Á¢¼ÓÇöÈ²
             std::cout << nameMsg << std::endl;
         }
-        // nameMsg[strLen] = 0;
-        // fputs(nameMsg, stdout);
+        fputs(nameMsg.c_str(), stdout);
     }
     return 0;
 }
