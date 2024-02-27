@@ -66,12 +66,6 @@ int main(int argc, char *argv[])
         ReleaseMutex(hMutex);
         int msglen;
         char nickname[NAME_SIZE];
-        // msglen = recv(hClntSock, nickname, sizeof(nickname)-1,0);//닉네임 받고
-        // nickname[msglen] = 0;//마지막에널문자용
-
-        // std::string user_name(nickname);
-        // std::cout << userid.size();
-        // bool duplication;//중복용
         while(1)
         {
             msglen = recv(hClntSock, nickname, sizeof(nickname)-1,0);//닉네임 받고
@@ -104,7 +98,9 @@ int main(int argc, char *argv[])
         //     std::cout << userid[i];
         // }
         hThread = (HANDLE)_beginthreadex(NULL, 0, HandleClnt, (void*)&hClntSock, 0, NULL);
-        std::cout << "Connected client IP:" << inet_ntoa(clntAdr.sin_addr) << ", TIME:" << (now->tm_hour) << ":" << now->tm_min << std::endl;
+        std::cout << "Connected client IP:" << inet_ntoa(clntAdr.sin_addr) << ", TIME:" << (now->tm_hour) << ":" << now->tm_min;
+        std::cout << ", nickname: " << nickname << std::endl;
+        
     }
     closesocket(hServSock);
     WSACleanup();
@@ -120,33 +116,63 @@ unsigned WINAPI HandleClnt(void *arg)
     char msg[BUF_SIZE];
     while((strLen = recv(hClntSock, msg, sizeof(msg), 0))!=0)
     {
-        // msg[strLen] = 0;
-        if(std::string(msg) == "1")//1:1채팅
+        msg[strLen] = 0;
+        // if(std::string(msg) == "1")//1:1채팅
+        // if(strcmp(msg, "1"))
+        // std::cout << msg << "msg확인용" << std::endl;
+        if(!strncmp(msg, "1", 1))//범위비교 msg[0]이랑
         {
             //친구닉네임 입력하게 하기
             //친구닉네임 수신후 맞는 소켓 찾아서 둘이 채팅하게 하기
+            //친구목록 보내주기
             std::cout << "1:1";
+            
+            send(hClntSock, "친구골라", strlen("친구골라"), 0);
         }
-        else if(std::string(msg) == "2")//1:다 채팅
+        // else if(std::string(msg) == "2")//1:다 채팅
+        else if(!strncmp(msg, "2", 1))
         {
             std::cout << "1:다";
-            while(1)
+            while(recv(hClntSock, msg, strlen(msg), 0)!=0)
                 SendMsg(msg, strLen);
         }
-        else if(std::string(msg) == "3") //친구찾기
+        // else if(std::string(msg) == "3") //친구찾기
+        else if(!strncmp(msg, "3", 1))
         {
-            std::cout << "친구찾기, ";
-            std::string user_list, test;
+            //여기서 접속끊겼는지 확인하기
+
+            // std::cout << "친구찾기, ";
+            std::string user_list, test;            
             //접속현황 띄워주고 친추할 인원 수신받기
             for(int i =0; i<userid.size() ; i++)
             {
                 user_list += userid[i];
                 if(i != userid.size() -1)
                     user_list += ", ";
-                test = "3_친구찾기_" + user_list;
+                test = "3" + user_list;
+            }            
+            send(hClntSock, test.c_str(), sizeof(test.c_str()), 0);
+            std::cout << test << "test확인용" << std::endl;
+            // std::cout << test;
+        }
+        else if(!strncmp(msg, "4", 1))
+        {
+            std::cout << "4번확인용" << std::endl;
+            std::string user;
+            for(i =1 ; i < strLen ; i++)
+            {
+                user += msg[i];
             }
-            send(hClntSock, test.c_str(), strlen(test.c_str()), 0);
-            std::cout << test;            
+            std::cout << user << "유저닉네임 확인" << std::endl; //여기까지옴
+            for(int i= 0 ; i< userid.size() ; i++)//벡터값 뒤지고
+            {
+                if(user == userid[i])//유저가 보낸 이름이랑 벡터에 저장된 값이랑 같다면
+                {
+                    std::cout << "같네" << std::endl;
+                }
+                else
+                    std::cout << "없는 닉네임" << std::endl;
+            }
         }
         // SendMsg(msg, strLen);
     }
