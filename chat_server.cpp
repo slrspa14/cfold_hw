@@ -4,6 +4,7 @@
 #include <string.h>
 #include <windows.h>
 #include <process.h>
+#include <thread>
 #include <ctime>
 #include <map>
 #include <vector>
@@ -93,11 +94,10 @@ int main(int argc, char *argv[])
                 break;
             }
         }
-        // for (int i = 0; i < userid.size(); i++) //확인용
-        // {
-        //     std::cout << userid[i];
-        // }
+
+        std::thread menu(menu_list, (void *)&hClntSock);
         hThread = (HANDLE)_beginthreadex(NULL, 0, HandleClnt, (void*)&hClntSock, 0, NULL);
+        
         std::cout << "Connected client IP:" << inet_ntoa(clntAdr.sin_addr) << ", TIME:" << (now->tm_hour) << ":" << now->tm_min;
         std::cout << ", nickname: " << nickname << std::endl;
         
@@ -150,9 +150,9 @@ unsigned WINAPI HandleClnt(void *arg)
                 if(i != userid.size() -1)
                     user_list += ", ";
                 test = "3" + user_list;
-            }            
-            send(hClntSock, test.c_str(), sizeof(test.c_str()), 0);
-            std::cout << test << "test확인용" << std::endl;
+            }
+            send(hClntSock, test.c_str(), strlen(test.c_str()), 0);
+            // std::cout << test << "test확인용" << std::endl;
             // std::cout << test;
         }
         else if(!strncmp(msg, "4", 1))
@@ -192,6 +192,7 @@ unsigned WINAPI HandleClnt(void *arg)
     closesocket(hClntSock);
     return 0;
 }
+
 void SendMsg(char *msg, int len)
 {
     int i;
@@ -200,6 +201,7 @@ void SendMsg(char *msg, int len)
         send(clntSocks[i], msg, len, 0);
     ReleaseMutex(hMutex);
 }
+
 void ErrorHandling(char *msg)
 {
     fputs(msg, stderr);
